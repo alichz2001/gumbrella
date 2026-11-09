@@ -1,0 +1,49 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: help
+
+  init:
+    desc: Install development tools
+    cmds:
+      - go install github.com/google/wire/cmd/wire@latest
+      - go install github.com/bufbuild/buf/cmd/buf@latest
+
+  config:
+    desc: Generate internal config protobufs
+    cmds:
+      - buf generate --template buf.gen.config.yaml
+
+  api:
+    desc: Generate API bindings and OpenAPI
+    cmds:
+      - buf generate --template buf.gen.yaml
+
+  build:
+    desc: Build binaries
+    vars:
+      VERSION:
+        sh: git describe --tags --always
+    cmds:
+      - mkdir -p bin/
+      - go build -ldflags "-X main.Version={{.VERSION}}" -o ./bin/ ./...
+
+  generate:
+    desc: Run Go generators and tidy modules
+    cmds:
+      - go generate ./...
+      - go mod tidy
+
+  all:
+    desc: Run all generation steps
+    cmds:
+      - task: api
+      - task: config
+      - task: generate
+
+  help:
+    desc: Show available tasks
+    cmds:
+      - '"{{.TASK_EXE}}" --list'

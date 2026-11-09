@@ -1,9 +1,11 @@
 FROM golang:1.25 AS builder
 
+RUN go install github.com/go-task/task/v3/cmd/task@latest
+
 COPY . /src
 WORKDIR /src
 
-RUN GOPROXY=https://goproxy.cn make build
+RUN GOPROXY=https://goproxy.cn task build
 
 FROM debian:stable-slim
 

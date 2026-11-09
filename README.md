@@ -24,7 +24,7 @@ go mod edit -module github.com/your-org/your-service
 6. Regenerate code and verify the project:
 
 ```bash
-make all
+task all
 go test ./...
 ```
 
@@ -71,34 +71,49 @@ parsed filters and ordering in SQL, Ent, or another storage layer.
 
 ## Development Commands
 
+Install [Task](https://taskfile.dev/installation/) and ensure `$(go env GOPATH)/bin`
+is on your `PATH`:
+
+```bash
+go install github.com/go-task/task/v3/cmd/task@latest
+```
+
+List available commands with `task` or `task help`.
+
 Install generators:
 
 ```bash
-make init
+task init
 ```
 
 Regenerate API bindings and OpenAPI:
 
 ```bash
-make api
+task api
 ```
 
 Regenerate config protobufs:
 
 ```bash
-make config
+task config
+```
+
+Run Go generators (including Wire) and module cleanup:
+
+```bash
+task generate
 ```
 
 Run all generation steps, Wire, and module cleanup:
 
 ```bash
-make all
+task all
 ```
 
 Build:
 
 ```bash
-make build
+task build
 ```
 
 Test:
