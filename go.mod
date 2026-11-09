@@ -1,4 +1,4 @@
-module github.com/go-kratos/kratos-layout
+module github.com/alichz2001/gombrella
 
 go 1.25.7
 

@@ -110,7 +110,7 @@ go test ./...
 ## Run Locally
 
 ```bash
-go run ./cmd/server -conf ./configs
+go run ./cmd/app -conf ./configs
 ```
 
 Default local ports are configured in `configs/config.yaml`:

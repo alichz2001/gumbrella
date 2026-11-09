@@ -84,7 +84,7 @@ design rather than add the import.
   the DO. PO types stay inside `data`. Use free functions
   `new<Resource>` (DO → PO, write) and `toBiz` (PO → DO, read).
   Driver-specific builder types never leave `data`.
-- _Shared clients_: `*Data` (declared in `internal/data/data.go`) holds
+- _Shared clients_: `*Data` (declared in `services/todo/data`) holds
   long-lived storage clients. Repos receive `*Data` and never construct
   their own clients.
 - _Querying_: translate `ListOptions.Filter` and `ListOptions.OrderBy`
@@ -109,7 +109,7 @@ design rather than add the import.
    diverges from DO.
 4. **Wiring**: register the repo constructor in `data.ProviderSet`, the
    usecase in `biz.ProviderSet`, the service in `service.ProviderSet`;
-   register HTTP/gRPC services in `internal/server`.
+   register HTTP/gRPC services in `cmd/app/server`.
 5. **Regenerate**: `make all` to refresh Wire and `go.mod`.
 
 ### Testing seam
@@ -128,7 +128,7 @@ Regenerate via `make api`, `make config`, or `make all`; never hand-edit
 - Resource: `<Resource>` (e.g., `Todo`); collection RPC:
   `List<Resources>`.
 - Types: repo `<Resource>Repo`, usecase `<Resource>Usecase`, service
-  `<Resource>Service`. PO types live inside `internal/data/`; pick a
+  `<Resource>Service`. PO types live inside `services/todo/data`; pick a
   name that fits the storage driver and convert with
   `new<Resource>(do)` / `toBiz(po)` free functions.
 - Error reasons: declared in `api/<domain>/<version>/error_reason.proto`,

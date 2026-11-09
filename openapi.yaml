@@ -293,7 +293,7 @@ components:
                          is guaranteed to be populated.
                 eventTime:
                     type: string
-                    description: Time at which the change was observed by the server.
+                    description: Time at which the change was observed by the app.
                     format: date-time
             description: |-
                 TodoEvent is a server-sent message describing a change to a todo item.
