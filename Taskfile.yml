@@ -36,6 +36,20 @@ tasks:
       - go generate ./...
       - go mod tidy
 
+  migrate:apply:
+    desc: Apply reviewed PostgreSQL migrations (requires Atlas and DATABASE_SOURCE)
+    requires:
+      vars: [DATABASE_SOURCE]
+    cmds:
+      - atlas migrate apply --dir "file://services/todo/migrations" --url "$DATABASE_SOURCE"
+
+  migrate:status:
+    desc: Show PostgreSQL migration status (requires Atlas and DATABASE_SOURCE)
+    requires:
+      vars: [DATABASE_SOURCE]
+    cmds:
+      - atlas migrate status --dir "file://services/todo/migrations" --url "$DATABASE_SOURCE"
+
   all:
     desc: Run all generation steps
     cmds:

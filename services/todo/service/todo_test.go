@@ -3,16 +3,19 @@ package service
 import (
 	"context"
 	"io"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/alichz2001/gombrella/services/todo/api"
 	"github.com/alichz2001/gombrella/services/todo/api/v1"
 	"github.com/alichz2001/gombrella/services/todo/biz"
+	"github.com/alichz2001/gombrella/services/todo/dto"
 
 	kratoserrors "github.com/go-kratos/kratos/v3/errors"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
@@ -104,6 +107,39 @@ func cloneTodo(todo *biz.Todo) *biz.Todo {
 	}
 	clone := *todo
 	return &clone
+}
+
+func TestTodoStatusNamesMatchProto(t *testing.T) {
+	names := append([]string{biz.TodoStatusUnspecified.String()}, biz.TodoStatus("").Values()...)
+	if len(names) != len(api.TodoStatus_value) {
+		t.Fatalf("domain has %d status names, proto has %d", len(names), len(api.TodoStatus_value))
+	}
+	for _, name := range names {
+		t.Run(name, func(t *testing.T) {
+			number, ok := api.TodoStatus_value[name]
+			if !ok {
+				t.Fatalf("domain name %q is missing from the proto enum", name)
+			}
+			status := biz.TodoStatus(name)
+			got := dto.ConvertTodoStatus(status)
+			if got != api.TodoStatus(number) || biz.TodoStatus(got.String()) != status {
+				t.Errorf("status round trip = %v, want %q", got, status)
+			}
+			data, err := protojson.Marshal(&api.Todo{Status: got})
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Proto JSON uses names, while binary protobuf retains numeric values.
+			if got != api.TodoStatus_TODO_STATUS_UNSPECIFIED && !strings.Contains(string(data), `"`+name+`"`) {
+				t.Errorf("proto JSON = %s, want enum name %q", data, name)
+			}
+		})
+	}
+	for _, status := range []biz.TodoStatus{"", "INVALID", "active"} {
+		if got := dto.ConvertTodoStatus(status); got != api.TodoStatus_TODO_STATUS_UNSPECIFIED {
+			t.Errorf("ConvertTodoStatus(%q) = %v, want unspecified", status, got)
+		}
+	}
 }
 
 func TestTodoServiceCRUD(t *testing.T) {

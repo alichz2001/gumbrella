@@ -219,6 +219,11 @@ func (_c *TodoCreate) check() error {
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Todo.status"`)}
 	}
+	if v, ok := _c.mutation.Status(); ok {
+		if err := todo.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Todo.status": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -250,6 +255,7 @@ func (_c *TodoCreate) createSpec() (*Todo, *sqlgraph.CreateSpec) {
 		_node = &Todo{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(todo.Table, sqlgraph.NewFieldSpec(todo.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.Todo
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -279,7 +285,7 @@ func (_c *TodoCreate) createSpec() (*Todo, *sqlgraph.CreateSpec) {
 		_node.Completed = value
 	}
 	if value, ok := _c.mutation.Status(); ok {
-		_spec.SetField(todo.FieldStatus, field.TypeInt32, value)
+		_spec.SetField(todo.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
 	return _node, _spec

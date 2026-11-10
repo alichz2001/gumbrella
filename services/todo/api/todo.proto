@@ -7,6 +7,8 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/alichz2001/gombrella/services/todo/api;api";
 
 // TodoStatus is the lifecycle state of a todo item.
+// Enum names are canonical string values shared with the domain and database.
+// Numbers are only the protobuf wire representation; keep them stable.
 enum TodoStatus {
   // Default value. Never returned by the server.
   TODO_STATUS_UNSPECIFIED = 0;

@@ -9,6 +9,7 @@ import (
 	"github.com/alichz2001/gombrella/services/todo/api"
 	v2 "github.com/alichz2001/gombrella/services/todo/api/v1"
 	"github.com/alichz2001/gombrella/services/todo/biz"
+	"github.com/alichz2001/gombrella/services/todo/dto"
 
 	"github.com/google/uuid"
 	"go.einride.tech/aip/fieldmask"
@@ -286,22 +287,8 @@ func convertTodoReply(in *biz.Todo) *api.Todo {
 		Title:     in.Title,
 		Content:   in.Content,
 		Completed: in.Completed,
-		Status:    convertTodoStatus(in.Status),
+		Status:    dto.ConvertTodoStatus(in.Status),
 		CreatedAt: timestamppb.New(in.CreatedAt),
 		UpdatedAt: timestamppb.New(in.UpdatedAt),
-	}
-}
-
-// convertTodoStatus maps a domain status onto the api enum. The two share their
-// numeric values, but the mapping is written out so neither side can drift into
-// the other silently.
-func convertTodoStatus(in biz.TodoStatus) api.TodoStatus {
-	switch in {
-	case biz.TodoStatusActive:
-		return api.TodoStatus_TODO_STATUS_ACTIVE
-	case biz.TodoStatusDeleted:
-		return api.TodoStatus_TODO_STATUS_DELETED
-	default:
-		return api.TodoStatus_TODO_STATUS_UNSPECIFIED
 	}
 }

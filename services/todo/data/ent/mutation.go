@@ -42,7 +42,6 @@ type TodoMutation struct {
 	content       *string
 	completed     *bool
 	status        *biz.TodoStatus
-	addstatus     *biz.TodoStatus
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Todo, error)
@@ -385,7 +384,6 @@ func (m *TodoMutation) ResetCompleted() {
 // SetStatus sets the "status" field.
 func (m *TodoMutation) SetStatus(bs biz.TodoStatus) {
 	m.status = &bs
-	m.addstatus = nil
 }
 
 // Status returns the value of the "status" field in the mutation.
@@ -414,28 +412,9 @@ func (m *TodoMutation) OldStatus(ctx context.Context) (v biz.TodoStatus, err err
 	return oldValue.Status, nil
 }
 
-// AddStatus adds bs to the "status" field.
-func (m *TodoMutation) AddStatus(bs biz.TodoStatus) {
-	if m.addstatus != nil {
-		*m.addstatus += bs
-	} else {
-		m.addstatus = &bs
-	}
-}
-
-// AddedStatus returns the value that was added to the "status" field in this mutation.
-func (m *TodoMutation) AddedStatus() (r biz.TodoStatus, exists bool) {
-	v := m.addstatus
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetStatus resets all changes to the "status" field.
 func (m *TodoMutation) ResetStatus() {
 	m.status = nil
-	m.addstatus = nil
 }
 
 // Where appends a list predicates to the TodoMutation builder.
@@ -604,21 +583,13 @@ func (m *TodoMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *TodoMutation) AddedFields() []string {
-	var fields []string
-	if m.addstatus != nil {
-		fields = append(fields, todo.FieldStatus)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *TodoMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case todo.FieldStatus:
-		return m.AddedStatus()
-	}
 	return nil, false
 }
 
@@ -627,13 +598,6 @@ func (m *TodoMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TodoMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case todo.FieldStatus:
-		v, ok := value.(biz.TodoStatus)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddStatus(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Todo numeric field %s", name)
 }

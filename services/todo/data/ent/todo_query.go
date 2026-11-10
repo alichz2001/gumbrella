@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/alichz2001/gombrella/services/todo/data/ent/internal"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/predicate"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 	"github.com/google/uuid"
@@ -344,6 +345,8 @@ func (_q *TodoQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Todo, e
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.Todo
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -358,6 +361,8 @@ func (_q *TodoQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Todo, e
 
 func (_q *TodoQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.Todo
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
 		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
@@ -420,6 +425,9 @@ func (_q *TodoQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.Todo)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, p := range _q.predicates {
 		p(selector)
 	}

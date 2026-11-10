@@ -3,13 +3,14 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
 
 var (
-	// TodosColumns holds the columns for the "todos" table.
-	TodosColumns = []*schema.Column{
+	// TodoColumns holds the columns for the "todo" table.
+	TodoColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -17,36 +18,39 @@ var (
 		{Name: "title", Type: field.TypeString, Default: ""},
 		{Name: "content", Type: field.TypeString, Default: ""},
 		{Name: "completed", Type: field.TypeBool, Default: false},
-		{Name: "status", Type: field.TypeInt32, Default: 1},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"TODO_STATUS_ACTIVE", "TODO_STATUS_DELETED"}, Default: "TODO_STATUS_ACTIVE", SchemaType: map[string]string{"postgres": "todo.todo_status"}},
 	}
-	// TodosTable holds the schema information for the "todos" table.
-	TodosTable = &schema.Table{
-		Name:       "todos",
-		Columns:    TodosColumns,
-		PrimaryKey: []*schema.Column{TodosColumns[0]},
+	// TodoTable holds the schema information for the "todo" table.
+	TodoTable = &schema.Table{
+		Name:       "todo",
+		Columns:    TodoColumns,
+		PrimaryKey: []*schema.Column{TodoColumns[0]},
 		Indexes: []*schema.Index{
 			{
 				Name:    "todo_updated_at",
 				Unique:  false,
-				Columns: []*schema.Column{TodosColumns[2]},
+				Columns: []*schema.Column{TodoColumns[2]},
 			},
 			{
 				Name:    "todo_deleted_at",
 				Unique:  false,
-				Columns: []*schema.Column{TodosColumns[3]},
+				Columns: []*schema.Column{TodoColumns[3]},
 			},
 			{
 				Name:    "todo_status",
 				Unique:  false,
-				Columns: []*schema.Column{TodosColumns[7]},
+				Columns: []*schema.Column{TodoColumns[7]},
 			},
 		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		TodosTable,
+		TodoTable,
 	}
 )
 
 func init() {
+	TodoTable.Annotation = &entsql.Annotation{
+		Table: "todo",
+	}
 }

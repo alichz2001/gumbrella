@@ -3,6 +3,7 @@
 package todo
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -30,7 +31,7 @@ const (
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// Table holds the table name of the todo in the database.
-	Table = "todos"
+	Table = "todo"
 )
 
 // Columns holds all SQL columns for todo fields.
@@ -68,11 +69,21 @@ var (
 	DefaultContent string
 	// DefaultCompleted holds the default value on creation for the "completed" field.
 	DefaultCompleted bool
-	// DefaultStatus holds the default value on creation for the "status" field.
-	DefaultStatus biz.TodoStatus
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+const DefaultStatus biz.TodoStatus = "TODO_STATUS_ACTIVE"
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s biz.TodoStatus) error {
+	switch s.String() {
+	case "TODO_STATUS_ACTIVE", "TODO_STATUS_DELETED":
+		return nil
+	default:
+		return fmt.Errorf("todo: invalid enum value for status field: %q", s)
+	}
+}
 
 // OrderOption defines the ordering options for the Todo queries.
 type OrderOption func(*sql.Selector)

@@ -43,9 +43,7 @@ func (*Todo) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case todo.FieldCompleted:
 			values[i] = new(sql.NullBool)
-		case todo.FieldStatus:
-			values[i] = new(sql.NullInt64)
-		case todo.FieldTitle, todo.FieldContent:
+		case todo.FieldTitle, todo.FieldContent, todo.FieldStatus:
 			values[i] = new(sql.NullString)
 		case todo.FieldCreatedAt, todo.FieldUpdatedAt, todo.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -110,10 +108,10 @@ func (_m *Todo) assignValues(columns []string, values []any) error {
 				_m.Completed = value.Bool
 			}
 		case todo.FieldStatus:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				_m.Status = biz.TodoStatus(value.Int64)
+				_m.Status = biz.TodoStatus(value.String)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

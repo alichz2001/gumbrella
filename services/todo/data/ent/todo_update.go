@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/alichz2001/gombrella/services/todo/biz"
+	"github.com/alichz2001/gombrella/services/todo/data/ent/internal"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/predicate"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 )
@@ -99,7 +100,6 @@ func (_u *TodoUpdate) SetNillableCompleted(v *bool) *TodoUpdate {
 
 // SetStatus sets the "status" field.
 func (_u *TodoUpdate) SetStatus(v biz.TodoStatus) *TodoUpdate {
-	_u.mutation.ResetStatus()
 	_u.mutation.SetStatus(v)
 	return _u
 }
@@ -109,12 +109,6 @@ func (_u *TodoUpdate) SetNillableStatus(v *biz.TodoStatus) *TodoUpdate {
 	if v != nil {
 		_u.SetStatus(*v)
 	}
-	return _u
-}
-
-// AddStatus adds value to the "status" field.
-func (_u *TodoUpdate) AddStatus(v biz.TodoStatus) *TodoUpdate {
-	_u.mutation.AddStatus(v)
 	return _u
 }
 
@@ -159,7 +153,20 @@ func (_u *TodoUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *TodoUpdate) check() error {
+	if v, ok := _u.mutation.Status(); ok {
+		if err := todo.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Todo.status": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *TodoUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(todo.Table, todo.Columns, sqlgraph.NewFieldSpec(todo.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -187,11 +194,10 @@ func (_u *TodoUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		_spec.SetField(todo.FieldCompleted, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
-		_spec.SetField(todo.FieldStatus, field.TypeInt32, value)
+		_spec.SetField(todo.FieldStatus, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AddedStatus(); ok {
-		_spec.AddField(todo.FieldStatus, field.TypeInt32, value)
-	}
+	_spec.Node.Schema = _u.schemaConfig.Todo
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{todo.Label}
@@ -282,7 +288,6 @@ func (_u *TodoUpdateOne) SetNillableCompleted(v *bool) *TodoUpdateOne {
 
 // SetStatus sets the "status" field.
 func (_u *TodoUpdateOne) SetStatus(v biz.TodoStatus) *TodoUpdateOne {
-	_u.mutation.ResetStatus()
 	_u.mutation.SetStatus(v)
 	return _u
 }
@@ -292,12 +297,6 @@ func (_u *TodoUpdateOne) SetNillableStatus(v *biz.TodoStatus) *TodoUpdateOne {
 	if v != nil {
 		_u.SetStatus(*v)
 	}
-	return _u
-}
-
-// AddStatus adds value to the "status" field.
-func (_u *TodoUpdateOne) AddStatus(v biz.TodoStatus) *TodoUpdateOne {
-	_u.mutation.AddStatus(v)
 	return _u
 }
 
@@ -355,7 +354,20 @@ func (_u *TodoUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *TodoUpdateOne) check() error {
+	if v, ok := _u.mutation.Status(); ok {
+		if err := todo.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Todo.status": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *TodoUpdateOne) sqlSave(ctx context.Context) (_node *Todo, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(todo.Table, todo.Columns, sqlgraph.NewFieldSpec(todo.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -400,11 +412,10 @@ func (_u *TodoUpdateOne) sqlSave(ctx context.Context) (_node *Todo, err error) {
 		_spec.SetField(todo.FieldCompleted, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
-		_spec.SetField(todo.FieldStatus, field.TypeInt32, value)
+		_spec.SetField(todo.FieldStatus, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AddedStatus(); ok {
-		_spec.AddField(todo.FieldStatus, field.TypeInt32, value)
-	}
+	_spec.Node.Schema = _u.schemaConfig.Todo
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_node = &Todo{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -8,11 +8,12 @@ server:
 data:
   database:
     driver: postgres
-    source: ${DATABASE_SOURCE:root:root@tcp(127.0.0.1:5432)/test}
+    source: ${DATABASE_SOURCE:postgres://postgres:postgres@127.0.0.1:5432/test?sslmode=disable}
     # Development conveniences. Keep both false in production and apply schema
     # changes as a separate reviewed step.
     debug: true
-    auto_migrate: true
+    # Native PostgreSQL enum types are managed by services/todo/migrations/.
+    auto_migrate: false
   redis:
     addr: ${REDIS_ADDR:127.0.0.1:6379}
     read_timeout: 0.2s

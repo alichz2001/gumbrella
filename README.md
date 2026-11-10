@@ -129,13 +129,24 @@ task generate
 ```
 
 Ent schema definitions live in `services/todo/data/ent/schema/` and embed the
-shared base schema instead of repeating the ID and time mixins:
+service-local base schema instead of repeating the namespace and ID/time mixins:
 
 ```go
 type Todo struct {
-    ent_schema.BaseModel
+    baseModel
 }
 ```
+
+`schema/base.go` sets the PostgreSQL namespace to `todo` once for the service.
+It embeds the shared `ent_schema.BaseModel` for UUIDs and audit timestamps, then
+adds an `entsql.Schema("todo")` mixin. Every new model should embed `baseModel`.
+The Todo model overrides only its table name to `todo`, producing `todo.todo`;
+its native enum type is `todo.todo_status`.
+
+Ent's `sql/schemaconfig` generation feature makes the client qualify SQL names
+automatically, so repositories need no prefixes and do not depend on a session
+`search_path`. Runtime overrides, if needed, belong at client construction in
+`data` via `ent.AlternateSchema`; the schema definitions remain the defaults.
 
 The generator writes `ent.Todo`, CRUD builders, and the database client to
 `services/todo/data/ent/`. To regenerate only Ent:
@@ -164,8 +175,39 @@ go test ./...
 
 ## Run Locally
 
+Apply the PostgreSQL migrations before starting the app (requires the
+[Atlas CLI](https://atlasgo.io/getting-started#installation)):
+
+```bash
+export DATABASE_SOURCE='postgres://postgres:postgres@127.0.0.1:5432/test?sslmode=disable'
+task migrate:apply
+```
+
+`services/todo/migrations/` starts with a fresh-database migration that creates
+the `todo` schema, the `todo.todo_status` native enum, and the `todo.todo` table.
+It is not an upgrade migration for an existing deployment. Commit SQL migrations
+and `atlas.sum` together. Startup `auto_migrate` is disabled by default: Ent does
+not create native PostgreSQL enum types, so SQL migrations must run first.
+
+Domain and persistence enum values are strings matching protobuf enum names.
+Protobuf keeps numeric wire values (for compatibility) and uses the names in
+JSON. Service conversions use generated name lookup maps, not switches.
+Empty/unspecified values are not valid database statuses. When adding an enum
+value, add its SQL migration as well as its domain/proto declarations; do not
+rewrite an already-applied migration. Automatic native-enum diff generation
+requires additional Atlas composite-schema setup (a Pro feature); the checked-in
+SQL migrations can be applied without that feature.
+
 ```bash
 go run ./cmd/app -conf ./configs
+```
+
+Optional PostgreSQL integration tests create isolated temporary databases and
+verify native enum storage and schema-qualified queries, including isolation
+from a same-named `public.todo` table. The test user needs `CREATEDB` permission:
+
+```bash
+TEST_DATABASE_SOURCE="$DATABASE_SOURCE" go test ./services/todo/data -run Postgres
 ```
 
 Default local ports are configured in `configs/config.yaml`:
