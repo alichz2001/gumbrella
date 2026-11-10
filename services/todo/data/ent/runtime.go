@@ -5,7 +5,7 @@ package ent
 import (
 	"time"
 
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/schema"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 	"github.com/google/uuid"

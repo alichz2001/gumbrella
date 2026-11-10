@@ -5,20 +5,13 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/internal/ent_schema"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 )
 
 // Todo holds the schema definition for the Todo entity.
 type Todo struct {
-	ent.Schema
-}
-
-// Mixin of the Todo.
-func (Todo) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		IDMixin{},
-		TimeMixin{},
-	}
+	ent_schema.BaseModel
 }
 
 // Fields of the Todo.

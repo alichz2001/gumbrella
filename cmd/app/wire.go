@@ -9,8 +9,8 @@ import (
 	"log/slog"
 
 	"github.com/alichz2001/gombrella/cmd/app/server"
-	"github.com/alichz2001/gombrella/internal/biz"
 	"github.com/alichz2001/gombrella/internal/conf"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data"
 	"github.com/alichz2001/gombrella/services/todo/service"
 

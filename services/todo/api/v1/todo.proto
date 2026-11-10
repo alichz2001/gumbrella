@@ -7,8 +7,10 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "todo/api/todo.proto";
 
-option go_package = "github.com/alichz2001/gombrella/api/todo/v1;v1";
+
+option go_package = "github.com/alichz2001/gombrella/services/todo/api/v1;v1";
 option java_multiple_files = true;
 option java_package = "io.grpc.examples.todo.v1";
 option java_outer_classname = "TodoProto";
@@ -20,7 +22,7 @@ service TodoService {
   // CreateTodo creates a new todo item and returns the persisted record
   // with the server-assigned id, created_at, and updated_at populated.
   // Returns INVALID_ARGUMENT if the request payload fails validation.
-  rpc CreateTodo (CreateTodoRequest) returns (Todo) {
+  rpc CreateTodo (CreateTodoRequest) returns (.todo.share.Todo) {
     option (google.api.http) = {
       post: "/v1/todos/create"
       body: "todo"
@@ -38,7 +40,7 @@ service TodoService {
 
   // GetTodo returns a single todo item by its id.
   // Returns NOT_FOUND if no todo exists with the supplied id.
-  rpc GetTodo (GetTodoRequest) returns (Todo) {
+  rpc GetTodo (GetTodoRequest) returns (.todo.share.Todo) {
     option (google.api.http) = {
       get: "/v1/todos/{id}"
     };
@@ -58,7 +60,7 @@ service TodoService {
   // other fields are left unchanged.
   // Returns NOT_FOUND if the target todo does not exist, or
   // INVALID_ARGUMENT if update_mask references unknown fields.
-  rpc UpdateTodo (UpdateTodoRequest) returns (Todo) {
+  rpc UpdateTodo (UpdateTodoRequest) returns (.todo.share.Todo) {
     option (google.api.http) = {
       put: "/v1/todos/update"
       body: "todo"
@@ -86,40 +88,11 @@ service TodoService {
   }
 }
 
-// TodoStatus is the lifecycle state of a todo item.
-enum TodoStatus {
-  // Default value. Never returned by the server.
-  TODO_STATUS_UNSPECIFIED = 0;
-  // The item is live and appears in reads.
-  TODO_STATUS_ACTIVE = 1;
-  // The item has been soft-deleted: the record is retained by the server but no
-  // longer appears in GetTodo or ListTodos results.
-  TODO_STATUS_DELETED = 2;
-}
-
-// Todo is the canonical representation of a todo item.
-message Todo {
-  // Application-generated UUIDv7 identifier. Read-only on create.
-  string id = 1;
-  // Short human-readable title.
-  string title = 2;
-  // Detailed description or notes for the todo item.
-  string content = 3;
-  // Whether the todo item has been completed.
-  bool completed = 4;
-  // Time at which the todo item was created. Server-assigned, read-only.
-  google.protobuf.Timestamp created_at = 5;
-  // Time at which the todo item was last modified. Server-assigned, read-only.
-  google.protobuf.Timestamp updated_at = 6;
-  // Lifecycle state. Server-assigned, read-only: call DeleteTodo to move an
-  // item to TODO_STATUS_DELETED.
-  TodoStatus status = 7;
-}
 
 // TodoSet is a paginated collection of todo items returned by ListTodos.
 message TodoSet {
   // The page of todo items in the order requested by ListTodosRequest.order_by.
-  repeated Todo todos = 1;
+  repeated .todo.share.Todo todos = 1;
   // Token used to retrieve the next page via ListTodosRequest.page_token.
   // Empty when there are no more results.
   string next_page_token = 2;
@@ -129,7 +102,7 @@ message TodoSet {
 message CreateTodoRequest {
   // The todo item to create. The id, created_at, and updated_at fields are
   // ignored on input and populated by the server in the response.
-  Todo todo = 1 [(google.api.field_behavior) = REQUIRED];
+  .todo.share.Todo todo = 1 [(google.api.field_behavior) = REQUIRED];
 }
 
 // GetTodoRequest is the input for TodoService.GetTodo.
@@ -168,7 +141,7 @@ message ListTodosRequest {
 message UpdateTodoRequest {
   // The todo carrying the new field values. todo.id identifies the target
   // record and must be set.
-  Todo todo = 1 [(google.api.field_behavior) = REQUIRED];
+  .todo.share.Todo todo = 1 [(google.api.field_behavior) = REQUIRED];
   // Set of field paths in todo to overwrite. Fields not listed are left
   // unchanged. Use a single path of `*` to replace every mutable field.
   google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
@@ -200,7 +173,7 @@ message SyncTodoRequest {
   // The operation to perform. One of `create`, `update`, or `delete`.
   string action = 1;
   // Payload for `create` and `update` actions. Ignored for `delete`.
-  Todo todo = 2;
+  .todo.share.Todo todo = 2;
   // Identifier of the target todo. Required for `delete` and `update`.
   string id = 3;
   // Field mask used by `update` actions to limit which fields are overwritten.
@@ -215,7 +188,7 @@ message TodoEvent {
   string action = 1;
   // The todo item after the change. For `deleted` events only the id field
   // is guaranteed to be populated.
-  Todo todo = 2;
+  .todo.share.Todo todo = 2;
   // Time at which the change was observed by the server.
   google.protobuf.Timestamp event_time = 3;
 }

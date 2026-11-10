@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package todo.v1.admin;
+
+import "google/api/annotations.proto";
+import "share_proto/share.proto";
+import "todo/api/todo.proto";
+
+option go_package = "github.com/alichz2001/gombrella/services/todo/api/v1/admin;admin";
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.todo.v1.admin";
+option java_outer_classname = "TodoProto";
+
+// TodoService provides a simple CRUD example for managing todo items.
+// It demonstrates unary, server-streaming, and bidirectional-streaming RPCs
+// together with AIP-style list filtering, ordering, and pagination.
+service TodoAdminService {
+  // CreateTodo creates a new todo item and returns the persisted record
+  // with the server-assigned id, created_at, and updated_at populated.
+  // Returns INVALID_ARGUMENT if the request payload fails validation.
+  rpc CreateTodo (.share.Empty) returns (.todo.share.Todo) {
+    option (google.api.http) = {
+      post: "/v1/admin/todos/create"
+      body: "*"
+    };
+  }
+
+}

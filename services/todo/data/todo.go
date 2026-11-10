@@ -3,7 +3,7 @@ package data
 import (
 	"context"
 
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 	ent2 "github.com/alichz2001/gombrella/services/todo/data/ent"
 	todo2 "github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 

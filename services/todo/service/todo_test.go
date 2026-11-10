@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/services/todo/api"
 	"github.com/alichz2001/gombrella/services/todo/api/v1"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 
 	kratoserrors "github.com/go-kratos/kratos/v3/errors"
 	"github.com/google/uuid"
@@ -110,7 +111,7 @@ func TestTodoServiceCRUD(t *testing.T) {
 	svc := newTestTodoService()
 
 	created, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{
-		Todo: &v1.Todo{
+		Todo: &api.Todo{
 			Title:     "write tests",
 			Content:   "cover todo CRUD",
 			Completed: false,
@@ -125,7 +126,7 @@ func TestTodoServiceCRUD(t *testing.T) {
 	if created.GetCreatedAt() == nil || created.GetUpdatedAt() == nil {
 		t.Fatal("CreateTodo() did not set timestamps")
 	}
-	if created.GetStatus() != v1.TodoStatus_TODO_STATUS_ACTIVE {
+	if created.GetStatus() != api.TodoStatus_TODO_STATUS_ACTIVE {
 		t.Fatalf("CreateTodo() status = %v, want active", created.GetStatus())
 	}
 
@@ -138,7 +139,7 @@ func TestTodoServiceCRUD(t *testing.T) {
 	}
 
 	updated, err := svc.UpdateTodo(ctx, &v1.UpdateTodoRequest{
-		Todo: &v1.Todo{
+		Todo: &api.Todo{
 			Id:        created.GetId(),
 			Title:     "write service tests",
 			Completed: true,
@@ -155,7 +156,7 @@ func TestTodoServiceCRUD(t *testing.T) {
 		t.Fatalf("UpdateTodo() content = %q, want original content", updated.GetContent())
 	}
 	// status is read-only: an update cannot move it, only DeleteTodo can.
-	if updated.GetStatus() != v1.TodoStatus_TODO_STATUS_ACTIVE {
+	if updated.GetStatus() != api.TodoStatus_TODO_STATUS_ACTIVE {
 		t.Fatalf("UpdateTodo() status = %v, want active", updated.GetStatus())
 	}
 
@@ -172,7 +173,7 @@ func TestTodoServiceListTodosPagination(t *testing.T) {
 	svc := newTestTodoService()
 
 	for _, title := range []string{"first", "second", "third"} {
-		if _, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &v1.Todo{Title: title}}); err != nil {
+		if _, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &api.Todo{Title: title}}); err != nil {
 			t.Fatalf("CreateTodo(%q) error = %v", title, err)
 		}
 	}
@@ -210,7 +211,7 @@ func TestTodoServiceListTodosFilterAndOrderByValidation(t *testing.T) {
 	ctx := context.Background()
 	svc := newTestTodoService()
 
-	for _, todo := range []*v1.Todo{
+	for _, todo := range []*api.Todo{
 		{Title: "write docs", Content: "public docs", Completed: true},
 		{Title: "fix bug", Content: "private bug", Completed: false},
 		{Title: "fix api", Content: "public api", Completed: true},
@@ -243,7 +244,7 @@ func TestTodoServiceValidation(t *testing.T) {
 	svc := newTestTodoService()
 	missingID := uuid.Must(uuid.NewV7()).String()
 
-	if _, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &v1.Todo{Title: " "}}); !kratoserrors.IsBadRequest(err) {
+	if _, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &api.Todo{Title: " "}}); !kratoserrors.IsBadRequest(err) {
 		t.Fatalf("CreateTodo(empty title) error = %v, want bad request", err)
 	}
 	if _, err := svc.GetTodo(ctx, &v1.GetTodoRequest{Id: "not-a-uuid"}); !kratoserrors.IsBadRequest(err) {
@@ -253,7 +254,7 @@ func TestTodoServiceValidation(t *testing.T) {
 		t.Fatalf("DeleteTodo(empty id) error = %v, want bad request", err)
 	}
 	if _, err := svc.UpdateTodo(ctx, &v1.UpdateTodoRequest{
-		Todo:       &v1.Todo{Id: missingID, Title: "missing mask"},
+		Todo:       &api.Todo{Id: missingID, Title: "missing mask"},
 		UpdateMask: &fieldmaskpb.FieldMask{},
 	}); !kratoserrors.IsBadRequest(err) {
 		t.Fatalf("UpdateTodo(empty mask) error = %v, want bad request", err)
@@ -276,7 +277,7 @@ func TestTodoServiceWatchTodos(t *testing.T) {
 	ctx := context.Background()
 	svc := newTestTodoService()
 
-	for _, todo := range []*v1.Todo{
+	for _, todo := range []*api.Todo{
 		{Title: "open task", Completed: false},
 		{Title: "done task", Completed: true},
 	} {
@@ -304,7 +305,7 @@ func TestTodoServiceSyncTodos(t *testing.T) {
 	svc := newTestTodoService()
 
 	// Seed a record so the update and delete actions have a real target.
-	seeded, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &v1.Todo{Title: "seeded todo"}})
+	seeded, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &api.Todo{Title: "seeded todo"}})
 	if err != nil {
 		t.Fatalf("CreateTodo() error = %v", err)
 	}
@@ -314,11 +315,11 @@ func TestTodoServiceSyncTodos(t *testing.T) {
 		requests: []*v1.SyncTodoRequest{
 			{
 				Action: "create",
-				Todo:   &v1.Todo{Title: "streamed todo", Content: "from bidi stream"},
+				Todo:   &api.Todo{Title: "streamed todo", Content: "from bidi stream"},
 			},
 			{
 				Action: "update",
-				Todo:   &v1.Todo{Id: seeded.GetId(), Completed: true},
+				Todo:   &api.Todo{Id: seeded.GetId(), Completed: true},
 				UpdateMask: &fieldmaskpb.FieldMask{
 					Paths: []string{"completed"},
 				},

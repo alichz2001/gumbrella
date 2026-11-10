@@ -10,12 +10,12 @@ import (
 	"reflect"
 
 	"github.com/alichz2001/gombrella/services/todo/data/ent/migrate"
-	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 	"github.com/google/uuid"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 )
 
 // Client is the client that holds all ent builders.

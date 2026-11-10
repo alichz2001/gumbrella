@@ -1,4 +1,4 @@
-FROM golang:1.25 AS builder
+FROM golang:1.26 AS builder
 
 RUN go install github.com/go-task/task/v3/cmd/task@latest
 

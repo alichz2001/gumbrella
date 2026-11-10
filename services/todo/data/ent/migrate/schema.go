@@ -13,6 +13,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "title", Type: field.TypeString, Default: ""},
 		{Name: "content", Type: field.TypeString, Default: ""},
 		{Name: "completed", Type: field.TypeBool, Default: false},
@@ -30,9 +31,14 @@ var (
 				Columns: []*schema.Column{TodosColumns[2]},
 			},
 			{
+				Name:    "todo_deleted_at",
+				Unique:  false,
+				Columns: []*schema.Column{TodosColumns[3]},
+			},
+			{
 				Name:    "todo_status",
 				Unique:  false,
-				Columns: []*schema.Column{TodosColumns[6]},
+				Columns: []*schema.Column{TodosColumns[7]},
 			},
 		},
 	}

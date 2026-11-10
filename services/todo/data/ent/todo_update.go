@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/predicate"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 )
@@ -32,6 +32,26 @@ func (_u *TodoUpdate) Where(ps ...predicate.Todo) *TodoUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *TodoUpdate) SetUpdatedAt(v time.Time) *TodoUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (_u *TodoUpdate) SetDeletedAt(v time.Time) *TodoUpdate {
+	_u.mutation.SetDeletedAt(v)
+	return _u
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (_u *TodoUpdate) SetNillableDeletedAt(v *time.Time) *TodoUpdate {
+	if v != nil {
+		_u.SetDeletedAt(*v)
+	}
+	return _u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *TodoUpdate) ClearDeletedAt() *TodoUpdate {
+	_u.mutation.ClearDeletedAt()
 	return _u
 }
 
@@ -151,6 +171,12 @@ func (_u *TodoUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(todo.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.DeletedAt(); ok {
+		_spec.SetField(todo.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(todo.FieldDeletedAt, field.TypeTime)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(todo.FieldTitle, field.TypeString, value)
 	}
@@ -189,6 +215,26 @@ type TodoUpdateOne struct {
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *TodoUpdateOne) SetUpdatedAt(v time.Time) *TodoUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (_u *TodoUpdateOne) SetDeletedAt(v time.Time) *TodoUpdateOne {
+	_u.mutation.SetDeletedAt(v)
+	return _u
+}
+
+// SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
+func (_u *TodoUpdateOne) SetNillableDeletedAt(v *time.Time) *TodoUpdateOne {
+	if v != nil {
+		_u.SetDeletedAt(*v)
+	}
+	return _u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *TodoUpdateOne) ClearDeletedAt() *TodoUpdateOne {
+	_u.mutation.ClearDeletedAt()
 	return _u
 }
 
@@ -337,6 +383,12 @@ func (_u *TodoUpdateOne) sqlSave(ctx context.Context) (_node *Todo, err error) {
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(todo.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.DeletedAt(); ok {
+		_spec.SetField(todo.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(todo.FieldDeletedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(todo.FieldTitle, field.TypeString, value)

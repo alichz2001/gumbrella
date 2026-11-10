@@ -4,8 +4,9 @@ import (
 	"context"
 	stdsql "database/sql"
 	"testing"
+	"time"
 
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent"
 
 	"entgo.io/ent/dialect"
@@ -21,7 +22,7 @@ import (
 // driver registers itself as "sqlite", so the ent dialect is set explicitly.
 func newTestRepo(t *testing.T) (biz.TodoRepo, *ent.Client) {
 	t.Helper()
-	db, err := stdsql.Open("sqlite", "file:"+t.Name()+"?mode=memory&cache=shared&_pragma=foreign_keys(1)")
+	db, err := stdsql.Open("sqlite", "file:"+t.Name()+"?mode=memory&cache=shared&_pragma=foreign_keys(1)&_time_format=sqlite")
 	if err != nil {
 		t.Fatalf("open sqlite: %v", err)
 	}
@@ -86,6 +87,46 @@ func TestTodoRepoCRUD(t *testing.T) {
 
 	if _, err := repo.FindByID(ctx, uuid.Must(uuid.NewV7())); !kratoserrors.IsNotFound(err) {
 		t.Fatalf("FindByID(missing) error = %v, want not found", err)
+	}
+}
+
+func TestTodoRepoDeletedAtIsNullable(t *testing.T) {
+	ctx := context.Background()
+	repo, client := newTestRepo(t)
+
+	created, err := repo.CreateTodo(ctx, &biz.Todo{Title: "nullable timestamp"})
+	if err != nil {
+		t.Fatalf("CreateTodo() error = %v", err)
+	}
+	po, err := client.Todo.Get(ctx, created.ID)
+	if err != nil {
+		t.Fatalf("ent Get() error = %v", err)
+	}
+	if po.DeletedAt != nil {
+		t.Fatalf("deleted_at = %v, want nil on creation", po.DeletedAt)
+	}
+
+	deletedAt := time.Now().UTC().Truncate(time.Second)
+	if _, err := client.Todo.UpdateOneID(created.ID).SetDeletedAt(deletedAt).Save(ctx); err != nil {
+		t.Fatalf("set deleted_at: %v", err)
+	}
+	po, err = client.Todo.Get(ctx, created.ID)
+	if err != nil {
+		t.Fatalf("ent Get() after setting deleted_at error = %v", err)
+	}
+	if po.DeletedAt == nil || !po.DeletedAt.Equal(deletedAt) {
+		t.Fatalf("deleted_at = %v, want %v", po.DeletedAt, deletedAt)
+	}
+
+	if _, err := client.Todo.UpdateOneID(created.ID).ClearDeletedAt().Save(ctx); err != nil {
+		t.Fatalf("clear deleted_at: %v", err)
+	}
+	po, err = client.Todo.Get(ctx, created.ID)
+	if err != nil {
+		t.Fatalf("ent Get() after clearing deleted_at error = %v", err)
+	}
+	if po.DeletedAt != nil {
+		t.Fatalf("deleted_at = %v, want nil after clearing", po.DeletedAt)
 	}
 }
 

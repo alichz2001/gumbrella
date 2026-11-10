@@ -2,13 +2,13 @@
 // versions:
 // - protoc-gen-go-http v2.9.2
 // - protoc             (unknown)
-// source: todo/v1/todo.proto
+// source: todo/api/v1/todo.proto
 
 package v1
 
 import (
 	context "context"
-
+	api "github.com/alichz2001/gombrella/services/todo/api"
 	http "github.com/go-kratos/kratos/v3/transport/http"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
@@ -29,23 +29,23 @@ const OperationTodoServiceWatchTodos = "/todo.v1.TodoService/WatchTodos"
 
 type TodoServiceHTTPServer interface {
 	// CreateTodo CreateTodo creates a new todo item and returns the persisted record
-	// with the app-assigned id, created_at, and updated_at populated.
+	// with the server-assigned id, created_at, and updated_at populated.
 	// Returns INVALID_ARGUMENT if the request payload fails validation.
-	CreateTodo(context.Context, *CreateTodoRequest) (*Todo, error)
+	CreateTodo(context.Context, *CreateTodoRequest) (*api.Todo, error)
 	// DeleteTodo DeleteTodo soft-deletes a todo item by its id. The record is retained by
-	// the app but no longer appears in GetTodo or ListTodos results.
+	// the server but no longer appears in GetTodo or ListTodos results.
 	// Returns NOT_FOUND if no todo exists with the supplied id.
 	DeleteTodo(context.Context, *DeleteTodoRequest) (*emptypb.Empty, error)
 	// GetTodo GetTodo returns a single todo item by its id.
 	// Returns NOT_FOUND if no todo exists with the supplied id.
-	GetTodo(context.Context, *GetTodoRequest) (*Todo, error)
+	GetTodo(context.Context, *GetTodoRequest) (*api.Todo, error)
 	// ListTodos ListTodos returns a page of todo items, optionally filtered and ordered.
 	// Use the next_page_token from TodoSet to retrieve subsequent pages.
 	// Returns INVALID_ARGUMENT if filter, order_by, or page_token are malformed.
 	ListTodos(context.Context, *ListTodosRequest) (*TodoSet, error)
 	// SyncTodos SyncTodos opens a bidirectional stream for two-way synchronization.
 	// The client sends SyncTodoRequest messages describing local changes, and
-	// the app pushes back TodoEvent messages reflecting the resulting state.
+	// the server pushes back TodoEvent messages reflecting the resulting state.
 	// The stream stays open until either side closes it.
 	SyncTodos(TodoService_SyncTodosServer) error
 	// UpdateTodo UpdateTodo applies a partial update to an existing todo item using a
@@ -53,10 +53,10 @@ type TodoServiceHTTPServer interface {
 	// other fields are left unchanged.
 	// Returns NOT_FOUND if the target todo does not exist, or
 	// INVALID_ARGUMENT if update_mask references unknown fields.
-	UpdateTodo(context.Context, *UpdateTodoRequest) (*Todo, error)
-	// WatchTodos WatchTodos opens a app-side stream that emits a TodoEvent for every
+	UpdateTodo(context.Context, *UpdateTodoRequest) (*api.Todo, error)
+	// WatchTodos WatchTodos opens a server-side stream that emits a TodoEvent for every
 	// create, update, or delete that matches the supplied filter and ordering.
-	// The stream remains open until the client cancels or the app terminates it.
+	// The stream remains open until the client cancels or the server terminates it.
 	WatchTodos(*WatchTodosRequest, TodoService_WatchTodosServer) error
 }
 
@@ -111,7 +111,7 @@ func _TodoService_CreateTodo0_HTTP_Handler(srv TodoServiceHTTPServer) func(ctx h
 		if err != nil {
 			return err
 		}
-		reply := out.(*Todo)
+		reply := out.(*api.Todo)
 		return ctx.Result(200, reply)
 	}
 }
@@ -152,7 +152,7 @@ func _TodoService_GetTodo0_HTTP_Handler(srv TodoServiceHTTPServer) func(ctx http
 		if err != nil {
 			return err
 		}
-		reply := out.(*Todo)
+		reply := out.(*api.Todo)
 		return ctx.Result(200, reply)
 	}
 }
@@ -191,7 +191,7 @@ func _TodoService_UpdateTodo0_HTTP_Handler(srv TodoServiceHTTPServer) func(ctx h
 		if err != nil {
 			return err
 		}
-		reply := out.(*Todo)
+		reply := out.(*api.Todo)
 		return ctx.Result(200, reply)
 	}
 }
@@ -236,23 +236,23 @@ func _TodoService_SyncTodos0_HTTP_Handler(srv TodoServiceHTTPServer) func(ctx ht
 
 type TodoServiceHTTPClient interface {
 	// CreateTodo CreateTodo creates a new todo item and returns the persisted record
-	// with the app-assigned id, created_at, and updated_at populated.
+	// with the server-assigned id, created_at, and updated_at populated.
 	// Returns INVALID_ARGUMENT if the request payload fails validation.
-	CreateTodo(ctx context.Context, req *CreateTodoRequest, opts ...http.CallOption) (rsp *Todo, err error)
+	CreateTodo(ctx context.Context, req *CreateTodoRequest, opts ...http.CallOption) (rsp *api.Todo, err error)
 	// DeleteTodo DeleteTodo soft-deletes a todo item by its id. The record is retained by
-	// the app but no longer appears in GetTodo or ListTodos results.
+	// the server but no longer appears in GetTodo or ListTodos results.
 	// Returns NOT_FOUND if no todo exists with the supplied id.
 	DeleteTodo(ctx context.Context, req *DeleteTodoRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// GetTodo GetTodo returns a single todo item by its id.
 	// Returns NOT_FOUND if no todo exists with the supplied id.
-	GetTodo(ctx context.Context, req *GetTodoRequest, opts ...http.CallOption) (rsp *Todo, err error)
+	GetTodo(ctx context.Context, req *GetTodoRequest, opts ...http.CallOption) (rsp *api.Todo, err error)
 	// ListTodos ListTodos returns a page of todo items, optionally filtered and ordered.
 	// Use the next_page_token from TodoSet to retrieve subsequent pages.
 	// Returns INVALID_ARGUMENT if filter, order_by, or page_token are malformed.
 	ListTodos(ctx context.Context, req *ListTodosRequest, opts ...http.CallOption) (rsp *TodoSet, err error)
 	// SyncTodos SyncTodos opens a bidirectional stream for two-way synchronization.
 	// The client sends SyncTodoRequest messages describing local changes, and
-	// the app pushes back TodoEvent messages reflecting the resulting state.
+	// the server pushes back TodoEvent messages reflecting the resulting state.
 	// The stream stays open until either side closes it.
 	SyncTodos(ctx context.Context, opts ...http.CallOption) (TodoService_SyncTodosClient, error)
 	// UpdateTodo UpdateTodo applies a partial update to an existing todo item using a
@@ -260,10 +260,10 @@ type TodoServiceHTTPClient interface {
 	// other fields are left unchanged.
 	// Returns NOT_FOUND if the target todo does not exist, or
 	// INVALID_ARGUMENT if update_mask references unknown fields.
-	UpdateTodo(ctx context.Context, req *UpdateTodoRequest, opts ...http.CallOption) (rsp *Todo, err error)
-	// WatchTodos WatchTodos opens a app-side stream that emits a TodoEvent for every
+	UpdateTodo(ctx context.Context, req *UpdateTodoRequest, opts ...http.CallOption) (rsp *api.Todo, err error)
+	// WatchTodos WatchTodos opens a server-side stream that emits a TodoEvent for every
 	// create, update, or delete that matches the supplied filter and ordering.
-	// The stream remains open until the client cancels or the app terminates it.
+	// The stream remains open until the client cancels or the server terminates it.
 	WatchTodos(ctx context.Context, req *WatchTodosRequest, opts ...http.CallOption) (TodoService_WatchTodosClient, error)
 }
 
@@ -334,10 +334,10 @@ func (x *TodoService_WatchTodosHTTPClient) Recv() (*TodoEvent, error) {
 }
 
 // CreateTodo CreateTodo creates a new todo item and returns the persisted record
-// with the app-assigned id, created_at, and updated_at populated.
+// with the server-assigned id, created_at, and updated_at populated.
 // Returns INVALID_ARGUMENT if the request payload fails validation.
-func (c *TodoServiceHTTPClientImpl) CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...http.CallOption) (*Todo, error) {
-	var out Todo
+func (c *TodoServiceHTTPClientImpl) CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...http.CallOption) (*api.Todo, error) {
+	var out api.Todo
 	pattern := "/v1/todos/create"
 	path := http.BuildPath(pattern, in, http.WithQueryParams(), http.WithOmitFields("todo"))
 	opts = append([]http.CallOption{
@@ -354,7 +354,7 @@ func (c *TodoServiceHTTPClientImpl) CreateTodo(ctx context.Context, in *CreateTo
 }
 
 // DeleteTodo DeleteTodo soft-deletes a todo item by its id. The record is retained by
-// the app but no longer appears in GetTodo or ListTodos results.
+// the server but no longer appears in GetTodo or ListTodos results.
 // Returns NOT_FOUND if no todo exists with the supplied id.
 func (c *TodoServiceHTTPClientImpl) DeleteTodo(ctx context.Context, in *DeleteTodoRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
@@ -374,8 +374,8 @@ func (c *TodoServiceHTTPClientImpl) DeleteTodo(ctx context.Context, in *DeleteTo
 
 // GetTodo GetTodo returns a single todo item by its id.
 // Returns NOT_FOUND if no todo exists with the supplied id.
-func (c *TodoServiceHTTPClientImpl) GetTodo(ctx context.Context, in *GetTodoRequest, opts ...http.CallOption) (*Todo, error) {
-	var out Todo
+func (c *TodoServiceHTTPClientImpl) GetTodo(ctx context.Context, in *GetTodoRequest, opts ...http.CallOption) (*api.Todo, error) {
+	var out api.Todo
 	pattern := "/v1/todos/{id}"
 	path := http.BuildPath(pattern, in, http.WithQueryParams())
 	opts = append([]http.CallOption{
@@ -411,7 +411,7 @@ func (c *TodoServiceHTTPClientImpl) ListTodos(ctx context.Context, in *ListTodos
 
 // SyncTodos SyncTodos opens a bidirectional stream for two-way synchronization.
 // The client sends SyncTodoRequest messages describing local changes, and
-// the app pushes back TodoEvent messages reflecting the resulting state.
+// the server pushes back TodoEvent messages reflecting the resulting state.
 // The stream stays open until either side closes it.
 func (c *TodoServiceHTTPClientImpl) SyncTodos(ctx context.Context, opts ...http.CallOption) (TodoService_SyncTodosClient, error) {
 	pattern := "/v1/todos/sync"
@@ -429,8 +429,8 @@ func (c *TodoServiceHTTPClientImpl) SyncTodos(ctx context.Context, opts ...http.
 // other fields are left unchanged.
 // Returns NOT_FOUND if the target todo does not exist, or
 // INVALID_ARGUMENT if update_mask references unknown fields.
-func (c *TodoServiceHTTPClientImpl) UpdateTodo(ctx context.Context, in *UpdateTodoRequest, opts ...http.CallOption) (*Todo, error) {
-	var out Todo
+func (c *TodoServiceHTTPClientImpl) UpdateTodo(ctx context.Context, in *UpdateTodoRequest, opts ...http.CallOption) (*api.Todo, error) {
+	var out api.Todo
 	pattern := "/v1/todos/update"
 	path := http.BuildPath(pattern, in, http.WithQueryParams(), http.WithOmitFields("todo"))
 	opts = append([]http.CallOption{
@@ -446,9 +446,9 @@ func (c *TodoServiceHTTPClientImpl) UpdateTodo(ctx context.Context, in *UpdateTo
 	return &out, nil
 }
 
-// WatchTodos WatchTodos opens a app-side stream that emits a TodoEvent for every
+// WatchTodos WatchTodos opens a server-side stream that emits a TodoEvent for every
 // create, update, or delete that matches the supplied filter and ordering.
-// The stream remains open until the client cancels or the app terminates it.
+// The stream remains open until the client cancels or the server terminates it.
 func (c *TodoServiceHTTPClientImpl) WatchTodos(ctx context.Context, in *WatchTodosRequest, opts ...http.CallOption) (TodoService_WatchTodosClient, error) {
 	pattern := "/v1/todos/watch"
 	path := http.BuildPath(pattern, in, http.WithQueryParams())

@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 	"github.com/google/uuid"
 )
@@ -23,6 +23,8 @@ type Todo struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// DeletedAt holds the value of the "deleted_at" field.
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Content holds the value of the "content" field.
@@ -45,7 +47,7 @@ func (*Todo) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case todo.FieldTitle, todo.FieldContent:
 			values[i] = new(sql.NullString)
-		case todo.FieldCreatedAt, todo.FieldUpdatedAt:
+		case todo.FieldCreatedAt, todo.FieldUpdatedAt, todo.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		case todo.FieldID:
 			values[i] = new(uuid.UUID)
@@ -81,6 +83,13 @@ func (_m *Todo) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
+			}
+		case todo.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				_m.DeletedAt = new(time.Time)
+				*_m.DeletedAt = value.Time
 			}
 		case todo.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -147,6 +156,11 @@ func (_m *Todo) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.DeletedAt; v != nil {
+		builder.WriteString("deleted_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)

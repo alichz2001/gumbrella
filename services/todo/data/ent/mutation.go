@@ -11,7 +11,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/predicate"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
 	"github.com/google/uuid"
@@ -37,6 +37,7 @@ type TodoMutation struct {
 	id            *uuid.UUID
 	created_at    *time.Time
 	updated_at    *time.Time
+	deleted_at    *time.Time
 	title         *string
 	content       *string
 	completed     *bool
@@ -222,6 +223,55 @@ func (m *TodoMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *TodoMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *TodoMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *TodoMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the Todo entity.
+// If the Todo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TodoMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *TodoMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[todo.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *TodoMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[todo.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *TodoMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, todo.FieldDeletedAt)
 }
 
 // SetTitle sets the "title" field.
@@ -422,12 +472,15 @@ func (m *TodoMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TodoMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, todo.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, todo.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, todo.FieldDeletedAt)
 	}
 	if m.title != nil {
 		fields = append(fields, todo.FieldTitle)
@@ -453,6 +506,8 @@ func (m *TodoMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case todo.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case todo.FieldDeletedAt:
+		return m.DeletedAt()
 	case todo.FieldTitle:
 		return m.Title()
 	case todo.FieldContent:
@@ -474,6 +529,8 @@ func (m *TodoMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case todo.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case todo.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
 	case todo.FieldTitle:
 		return m.OldTitle(ctx)
 	case todo.FieldContent:
@@ -504,6 +561,13 @@ func (m *TodoMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case todo.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
 		return nil
 	case todo.FieldTitle:
 		v, ok := value.(string)
@@ -577,7 +641,11 @@ func (m *TodoMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *TodoMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(todo.FieldDeletedAt) {
+		fields = append(fields, todo.FieldDeletedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -590,6 +658,11 @@ func (m *TodoMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *TodoMutation) ClearField(name string) error {
+	switch name {
+	case todo.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Todo nullable field %s", name)
 }
 
@@ -602,6 +675,9 @@ func (m *TodoMutation) ResetField(name string) error {
 		return nil
 	case todo.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case todo.FieldDeletedAt:
+		m.ResetDeletedAt()
 		return nil
 	case todo.FieldTitle:
 		m.ResetTitle()

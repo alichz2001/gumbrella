@@ -14,7 +14,7 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 
-# Go workspace file
+# Go workspace todo.proto
 go.work
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
@@ -31,6 +31,15 @@ Thumbs.db
 *.key
 *.log
 bin/
+
+# Generated Go code (protobuf and Wire)
+*.pb.go
+wire_gen.go
+
+# Ent-generated Go code; keep schemas and the generator entrypoint
+**/data/ent/**/*.go
+!**/data/ent/generate.go
+!**/data/ent/schema/**/*.go
 
 # Develop tools
 .vscode/

@@ -6,8 +6,9 @@ import (
 	"io"
 	"strings"
 
-	"github.com/alichz2001/gombrella/internal/biz"
+	"github.com/alichz2001/gombrella/services/todo/api"
 	v2 "github.com/alichz2001/gombrella/services/todo/api/v1"
+	"github.com/alichz2001/gombrella/services/todo/biz"
 
 	"github.com/google/uuid"
 	"go.einride.tech/aip/fieldmask"
@@ -35,7 +36,7 @@ func NewTodoService(uc *biz.TodoUsecase) *TodoService {
 }
 
 // CreateTodo creates a todo item.
-func (s *TodoService) CreateTodo(ctx context.Context, req *v2.CreateTodoRequest) (*v2.Todo, error) {
+func (s *TodoService) CreateTodo(ctx context.Context, req *v2.CreateTodoRequest) (*api.Todo, error) {
 	todo, err := s.uc.CreateTodo(ctx, convertTodo(req.GetTodo()))
 	if err != nil {
 		return nil, err
@@ -44,7 +45,7 @@ func (s *TodoService) CreateTodo(ctx context.Context, req *v2.CreateTodoRequest)
 }
 
 // GetTodo returns a todo item by ID.
-func (s *TodoService) GetTodo(ctx context.Context, req *v2.GetTodoRequest) (*v2.Todo, error) {
+func (s *TodoService) GetTodo(ctx context.Context, req *v2.GetTodoRequest) (*api.Todo, error) {
 	id, err := parseTodoID(req.GetId())
 	if err != nil {
 		return nil, err
@@ -98,7 +99,7 @@ func (s *TodoService) ListTodos(ctx context.Context, req *v2.ListTodosRequest) (
 		return nil, err
 	}
 	set := &v2.TodoSet{
-		Todos: make([]*v2.Todo, 0, len(todos)),
+		Todos: make([]*api.Todo, 0, len(todos)),
 	}
 	if len(todos) >= int(req.PageSize) {
 		set.NextPageToken = pageToken.Next(req).String()
@@ -110,7 +111,7 @@ func (s *TodoService) ListTodos(ctx context.Context, req *v2.ListTodosRequest) (
 }
 
 // UpdateTodo updates a todo item.
-func (s *TodoService) UpdateTodo(ctx context.Context, req *v2.UpdateTodoRequest) (*v2.Todo, error) {
+func (s *TodoService) UpdateTodo(ctx context.Context, req *v2.UpdateTodoRequest) (*api.Todo, error) {
 	if req.GetTodo().GetId() == "" || req.GetUpdateMask() == nil || len(req.GetUpdateMask().GetPaths()) == 0 {
 		return nil, biz.ErrTodoInvalidArgument
 	}
@@ -224,9 +225,9 @@ func (s *TodoService) SyncTodos(stream v2.TodoService_SyncTodosServer) error {
 			}
 			// The record is hidden from reads now, so only the id and the
 			// resulting status are meaningful.
-			event = newTodoEvent("deleted", &v2.Todo{
+			event = newTodoEvent("deleted", &api.Todo{
 				Id:     id,
-				Status: v2.TodoStatus_TODO_STATUS_DELETED,
+				Status: api.TodoStatus_TODO_STATUS_DELETED,
 			})
 		default:
 			return biz.ErrTodoInvalidArgument
@@ -252,7 +253,7 @@ func parseTodoID(id string) (uuid.UUID, error) {
 // The id is left at uuid.Nil when absent or unparseable. Callers that require a
 // real id validate it with parseTodoID first; on the create path no id is
 // supplied and the storage layer assigns one.
-func convertTodo(in *v2.Todo) *biz.Todo {
+func convertTodo(in *api.Todo) *biz.Todo {
 	if in == nil {
 		return nil
 	}
@@ -268,7 +269,7 @@ func convertTodo(in *v2.Todo) *biz.Todo {
 // newTodoEvent wraps an outgoing todo in a stream event. It takes the reply
 // shape directly so handlers that already hold one do not round-trip it back
 // through a DO, which would drop the app-assigned timestamps.
-func newTodoEvent(action string, todo *v2.Todo) *v2.TodoEvent {
+func newTodoEvent(action string, todo *api.Todo) *v2.TodoEvent {
 	return &v2.TodoEvent{
 		Action:    action,
 		Todo:      todo,
@@ -276,11 +277,11 @@ func newTodoEvent(action string, todo *v2.Todo) *v2.TodoEvent {
 	}
 }
 
-func convertTodoReply(in *biz.Todo) *v2.Todo {
+func convertTodoReply(in *biz.Todo) *api.Todo {
 	if in == nil {
 		return nil
 	}
-	return &v2.Todo{
+	return &api.Todo{
 		Id:        in.ID.String(),
 		Title:     in.Title,
 		Content:   in.Content,
@@ -294,13 +295,13 @@ func convertTodoReply(in *biz.Todo) *v2.Todo {
 // convertTodoStatus maps a domain status onto the api enum. The two share their
 // numeric values, but the mapping is written out so neither side can drift into
 // the other silently.
-func convertTodoStatus(in biz.TodoStatus) v2.TodoStatus {
+func convertTodoStatus(in biz.TodoStatus) api.TodoStatus {
 	switch in {
 	case biz.TodoStatusActive:
-		return v2.TodoStatus_TODO_STATUS_ACTIVE
+		return api.TodoStatus_TODO_STATUS_ACTIVE
 	case biz.TodoStatusDeleted:
-		return v2.TodoStatus_TODO_STATUS_DELETED
+		return api.TodoStatus_TODO_STATUS_DELETED
 	default:
-		return v2.TodoStatus_TODO_STATUS_UNSPECIFIED
+		return api.TodoStatus_TODO_STATUS_UNSPECIFIED
 	}
 }
