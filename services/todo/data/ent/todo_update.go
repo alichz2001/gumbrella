@@ -11,10 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/internal"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/predicate"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
+	"github.com/alichz2001/gombrella/services/todo/model"
 )
 
 // TodoUpdate is the builder for updating Todo entities.
@@ -99,13 +99,13 @@ func (_u *TodoUpdate) SetNillableCompleted(v *bool) *TodoUpdate {
 }
 
 // SetStatus sets the "status" field.
-func (_u *TodoUpdate) SetStatus(v biz.TodoStatus) *TodoUpdate {
+func (_u *TodoUpdate) SetStatus(v model.TodoStatus) *TodoUpdate {
 	_u.mutation.SetStatus(v)
 	return _u
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *TodoUpdate) SetNillableStatus(v *biz.TodoStatus) *TodoUpdate {
+func (_u *TodoUpdate) SetNillableStatus(v *model.TodoStatus) *TodoUpdate {
 	if v != nil {
 		_u.SetStatus(*v)
 	}
@@ -287,13 +287,13 @@ func (_u *TodoUpdateOne) SetNillableCompleted(v *bool) *TodoUpdateOne {
 }
 
 // SetStatus sets the "status" field.
-func (_u *TodoUpdateOne) SetStatus(v biz.TodoStatus) *TodoUpdateOne {
+func (_u *TodoUpdateOne) SetStatus(v model.TodoStatus) *TodoUpdateOne {
 	_u.mutation.SetStatus(v)
 	return _u
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *TodoUpdateOne) SetNillableStatus(v *biz.TodoStatus) *TodoUpdateOne {
+func (_u *TodoUpdateOne) SetNillableStatus(v *model.TodoStatus) *TodoUpdateOne {
 	if v != nil {
 		_u.SetStatus(*v)
 	}

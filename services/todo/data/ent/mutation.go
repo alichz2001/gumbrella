@@ -11,9 +11,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/predicate"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
+	"github.com/alichz2001/gombrella/services/todo/model"
 	"github.com/google/uuid"
 )
 
@@ -41,7 +41,7 @@ type TodoMutation struct {
 	title         *string
 	content       *string
 	completed     *bool
-	status        *biz.TodoStatus
+	status        *model.TodoStatus
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Todo, error)
@@ -382,12 +382,12 @@ func (m *TodoMutation) ResetCompleted() {
 }
 
 // SetStatus sets the "status" field.
-func (m *TodoMutation) SetStatus(bs biz.TodoStatus) {
-	m.status = &bs
+func (m *TodoMutation) SetStatus(ms model.TodoStatus) {
+	m.status = &ms
 }
 
 // Status returns the value of the "status" field in the mutation.
-func (m *TodoMutation) Status() (r biz.TodoStatus, exists bool) {
+func (m *TodoMutation) Status() (r model.TodoStatus, exists bool) {
 	v := m.status
 	if v == nil {
 		return
@@ -398,7 +398,7 @@ func (m *TodoMutation) Status() (r biz.TodoStatus, exists bool) {
 // OldStatus returns the old "status" field's value of the Todo entity.
 // If the Todo object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TodoMutation) OldStatus(ctx context.Context) (v biz.TodoStatus, err error) {
+func (m *TodoMutation) OldStatus(ctx context.Context) (v model.TodoStatus, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
@@ -570,7 +570,7 @@ func (m *TodoMutation) SetField(name string, value ent.Value) error {
 		m.SetCompleted(v)
 		return nil
 	case todo.FieldStatus:
-		v, ok := value.(biz.TodoStatus)
+		v, ok := value.(model.TodoStatus)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

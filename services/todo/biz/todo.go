@@ -3,69 +3,21 @@ package biz
 import (
 	"context"
 	"strings"
-	"time"
 
-	"github.com/alichz2001/gombrella/services/todo/api/v1"
+	errors2 "github.com/alichz2001/gombrella/services/todo/errors"
+	"github.com/alichz2001/gombrella/services/todo/model"
 
-	"github.com/go-kratos/kratos/v3/errors"
 	"github.com/google/uuid"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"
 )
 
-var (
-	// ErrTodoNotFound is returned when a todo does not exist.
-	ErrTodoNotFound = errors.NotFound(v1.ErrorReason_TODO_NOT_FOUND.String(), "todo not found")
-	// ErrTodoInvalidArgument is returned when a todo request is invalid.
-	ErrTodoInvalidArgument = errors.BadRequest(v1.ErrorReason_TODO_INVALID_ARGUMENT.String(), "invalid todo argument")
-)
-
-// TodoStatus is the lifecycle state of a todo. Values are the canonical enum
-// names shared with protobuf and PostgreSQL; numeric proto values stay at the
-// transport boundary.
-type TodoStatus string
-
-const (
-	// TodoStatusUnspecified represents an unset API status; it is never persisted.
-	TodoStatusUnspecified TodoStatus = "TODO_STATUS_UNSPECIFIED"
-	// TodoStatusActive marks a live todo.
-	TodoStatusActive TodoStatus = "TODO_STATUS_ACTIVE"
-	// TodoStatusDeleted marks a soft-deleted todo. The record is retained but
-	// hidden from reads.
-	TodoStatusDeleted TodoStatus = "TODO_STATUS_DELETED"
-)
-
-// String returns the canonical enum name.
-func (s TodoStatus) String() string {
-	return string(s)
-}
-
-// Values returns the allowed persisted values. The unspecified sentinel and
-// the empty Go zero value are deliberately excluded.
-func (TodoStatus) Values() []string {
-	return []string{
-		TodoStatusActive.String(),
-		TodoStatusDeleted.String(),
-	}
-}
-
-// Todo is a Todo model.
-type Todo struct {
-	ID        uuid.UUID
-	Title     string
-	Content   string
-	Completed bool
-	Status    TodoStatus
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
 // TodoRepo is a todo repo.
 type TodoRepo interface {
-	FindByID(context.Context, uuid.UUID) (*Todo, error)
-	ListTodos(context.Context, ...ListOption) ([]*Todo, error)
-	CreateTodo(context.Context, *Todo) (*Todo, error)
-	UpdateTodo(context.Context, *Todo) (*Todo, error)
+	FindByID(context.Context, uuid.UUID) (*model.Todo, error)
+	ListTodos(context.Context, ...ListOption) ([]*model.Todo, error)
+	CreateTodo(context.Context, *model.Todo) (*model.Todo, error)
+	UpdateTodo(context.Context, *model.Todo) (*model.Todo, error)
 	DeleteTodo(context.Context, uuid.UUID) error
 }
 
@@ -119,20 +71,20 @@ func NewTodoUsecase(repo TodoRepo) *TodoUsecase {
 }
 
 // GetTodo returns a todo by ID.
-func (uc *TodoUsecase) GetTodo(ctx context.Context, id uuid.UUID) (*Todo, error) {
+func (uc *TodoUsecase) GetTodo(ctx context.Context, id uuid.UUID) (*model.Todo, error) {
 	if id == uuid.Nil {
-		return nil, ErrTodoInvalidArgument
+		return nil, errors2.ErrTodoInvalidArgument
 	}
 	return uc.repo.FindByID(ctx, id)
 }
 
 // ListTodos lists todos.
-func (uc *TodoUsecase) ListTodos(ctx context.Context, opts ...ListOption) ([]*Todo, error) {
+func (uc *TodoUsecase) ListTodos(ctx context.Context, opts ...ListOption) ([]*model.Todo, error) {
 	return uc.repo.ListTodos(ctx, opts...)
 }
 
 // CreateTodo creates a todo.
-func (uc *TodoUsecase) CreateTodo(ctx context.Context, todo *Todo) (*Todo, error) {
+func (uc *TodoUsecase) CreateTodo(ctx context.Context, todo *model.Todo) (*model.Todo, error) {
 	if err := validateTodo(todo); err != nil {
 		return nil, err
 	}
@@ -140,9 +92,9 @@ func (uc *TodoUsecase) CreateTodo(ctx context.Context, todo *Todo) (*Todo, error
 }
 
 // UpdateTodo updates a todo.
-func (uc *TodoUsecase) UpdateTodo(ctx context.Context, todo *Todo) (*Todo, error) {
+func (uc *TodoUsecase) UpdateTodo(ctx context.Context, todo *model.Todo) (*model.Todo, error) {
 	if todo == nil || todo.ID == uuid.Nil {
-		return nil, ErrTodoInvalidArgument
+		return nil, errors2.ErrTodoInvalidArgument
 	}
 	if err := validateTodo(todo); err != nil {
 		return nil, err
@@ -153,14 +105,14 @@ func (uc *TodoUsecase) UpdateTodo(ctx context.Context, todo *Todo) (*Todo, error
 // DeleteTodo soft-deletes a todo.
 func (uc *TodoUsecase) DeleteTodo(ctx context.Context, id uuid.UUID) error {
 	if id == uuid.Nil {
-		return ErrTodoInvalidArgument
+		return errors2.ErrTodoInvalidArgument
 	}
 	return uc.repo.DeleteTodo(ctx, id)
 }
 
-func validateTodo(todo *Todo) error {
+func validateTodo(todo *model.Todo) error {
 	if todo == nil || strings.TrimSpace(todo.Title) == "" {
-		return ErrTodoInvalidArgument
+		return errors2.ErrTodoInvalidArgument
 	}
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/alichz2001/gombrella/services/todo/biz"
+	"github.com/alichz2001/gombrella/services/todo/model"
 	"github.com/google/uuid"
 )
 
@@ -73,10 +73,10 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-const DefaultStatus biz.TodoStatus = "TODO_STATUS_ACTIVE"
+const DefaultStatus model.TodoStatus = "TODO_STATUS_ACTIVE"
 
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s biz.TodoStatus) error {
+func StatusValidator(s model.TodoStatus) error {
 	switch s.String() {
 	case "TODO_STATUS_ACTIVE", "TODO_STATUS_DELETED":
 		return nil

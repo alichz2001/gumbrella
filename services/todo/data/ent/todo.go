@@ -9,8 +9,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
+	"github.com/alichz2001/gombrella/services/todo/model"
 	"github.com/google/uuid"
 )
 
@@ -32,7 +32,7 @@ type Todo struct {
 	// Completed holds the value of the "completed" field.
 	Completed bool `json:"completed,omitempty"`
 	// Status holds the value of the "status" field.
-	Status       biz.TodoStatus `json:"status,omitempty"`
+	Status       model.TodoStatus `json:"status,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -111,7 +111,7 @@ func (_m *Todo) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				_m.Status = biz.TodoStatus(value.String)
+				_m.Status = model.TodoStatus(value.String)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

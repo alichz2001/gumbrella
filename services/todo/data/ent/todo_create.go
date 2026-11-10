@@ -10,8 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/todo"
+	"github.com/alichz2001/gombrella/services/todo/model"
 	"github.com/google/uuid"
 )
 
@@ -107,13 +107,13 @@ func (_c *TodoCreate) SetNillableCompleted(v *bool) *TodoCreate {
 }
 
 // SetStatus sets the "status" field.
-func (_c *TodoCreate) SetStatus(v biz.TodoStatus) *TodoCreate {
+func (_c *TodoCreate) SetStatus(v model.TodoStatus) *TodoCreate {
 	_c.mutation.SetStatus(v)
 	return _c
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (_c *TodoCreate) SetNillableStatus(v *biz.TodoStatus) *TodoCreate {
+func (_c *TodoCreate) SetNillableStatus(v *model.TodoStatus) *TodoCreate {
 	if v != nil {
 		_c.SetStatus(*v)
 	}

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/data/ent/predicate"
+	"github.com/alichz2001/gombrella/services/todo/model"
 	"github.com/google/uuid"
 )
 
@@ -357,19 +357,19 @@ func CompletedNEQ(v bool) predicate.Todo {
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v biz.TodoStatus) predicate.Todo {
+func StatusEQ(v model.TodoStatus) predicate.Todo {
 	vc := v
 	return predicate.Todo(sql.FieldEQ(FieldStatus, vc))
 }
 
 // StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v biz.TodoStatus) predicate.Todo {
+func StatusNEQ(v model.TodoStatus) predicate.Todo {
 	vc := v
 	return predicate.Todo(sql.FieldNEQ(FieldStatus, vc))
 }
 
 // StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...biz.TodoStatus) predicate.Todo {
+func StatusIn(vs ...model.TodoStatus) predicate.Todo {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -378,7 +378,7 @@ func StatusIn(vs ...biz.TodoStatus) predicate.Todo {
 }
 
 // StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...biz.TodoStatus) predicate.Todo {
+func StatusNotIn(vs ...model.TodoStatus) predicate.Todo {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]

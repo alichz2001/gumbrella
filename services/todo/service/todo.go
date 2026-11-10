@@ -10,6 +10,8 @@ import (
 	v2 "github.com/alichz2001/gombrella/services/todo/api/v1"
 	"github.com/alichz2001/gombrella/services/todo/biz"
 	"github.com/alichz2001/gombrella/services/todo/dto"
+	errors2 "github.com/alichz2001/gombrella/services/todo/errors"
+	"github.com/alichz2001/gombrella/services/todo/model"
 
 	"github.com/google/uuid"
 	"go.einride.tech/aip/fieldmask"
@@ -114,7 +116,7 @@ func (s *TodoService) ListTodos(ctx context.Context, req *v2.ListTodosRequest) (
 // UpdateTodo updates a todo item.
 func (s *TodoService) UpdateTodo(ctx context.Context, req *v2.UpdateTodoRequest) (*api.Todo, error) {
 	if req.GetTodo().GetId() == "" || req.GetUpdateMask() == nil || len(req.GetUpdateMask().GetPaths()) == 0 {
-		return nil, biz.ErrTodoInvalidArgument
+		return nil, errors2.ErrTodoInvalidArgument
 	}
 	current, err := s.GetTodo(ctx, &v2.GetTodoRequest{Id: req.GetTodo().GetId()})
 	if err != nil {
@@ -231,7 +233,7 @@ func (s *TodoService) SyncTodos(stream v2.TodoService_SyncTodosServer) error {
 				Status: api.TodoStatus_TODO_STATUS_DELETED,
 			})
 		default:
-			return biz.ErrTodoInvalidArgument
+			return errors2.ErrTodoInvalidArgument
 		}
 		if err := stream.Send(event); err != nil {
 			return err
@@ -243,7 +245,7 @@ func (s *TodoService) SyncTodos(stream v2.TodoService_SyncTodosServer) error {
 func parseTodoID(id string) (uuid.UUID, error) {
 	parsed, err := uuid.Parse(id)
 	if err != nil {
-		return uuid.Nil, biz.ErrTodoInvalidArgument
+		return uuid.Nil, errors2.ErrTodoInvalidArgument
 	}
 	return parsed, nil
 }
@@ -254,12 +256,12 @@ func parseTodoID(id string) (uuid.UUID, error) {
 // The id is left at uuid.Nil when absent or unparseable. Callers that require a
 // real id validate it with parseTodoID first; on the create path no id is
 // supplied and the storage layer assigns one.
-func convertTodo(in *api.Todo) *biz.Todo {
+func convertTodo(in *api.Todo) *model.Todo {
 	if in == nil {
 		return nil
 	}
 	id, _ := uuid.Parse(in.GetId())
-	return &biz.Todo{
+	return &model.Todo{
 		ID:        id,
 		Title:     in.GetTitle(),
 		Content:   in.GetContent(),
@@ -278,7 +280,7 @@ func newTodoEvent(action string, todo *api.Todo) *v2.TodoEvent {
 	}
 }
 
-func convertTodoReply(in *biz.Todo) *api.Todo {
+func convertTodoReply(in *model.Todo) *api.Todo {
 	if in == nil {
 		return nil
 	}

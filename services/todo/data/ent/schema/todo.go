@@ -7,8 +7,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-
-	"github.com/alichz2001/gombrella/services/todo/biz"
+	"github.com/alichz2001/gombrella/services/todo/model"
 )
 
 // Todo holds the schema definition for the Todo entity.
@@ -31,8 +30,8 @@ func (Todo) Fields() []ent.Field {
 		// removing the row. PostgreSQL stores the canonical proto names in a
 		// native enum type, created by the SQL migrations before this table.
 		field.Enum("status").
-			GoType(biz.TodoStatus("")).
-			Default(biz.TodoStatusActive.String()).
+			GoType(model.TodoStatus("")).
+			Default(model.TodoStatusActive.String()).
 			SchemaType(map[string]string{
 				dialect.Postgres: postgresSchema + ".todo_status",
 			}),
